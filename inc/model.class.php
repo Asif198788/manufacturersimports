@@ -66,7 +66,7 @@ class PluginManufacturersimportsModel extends CommonDBTM {
          if ($DB->numrows($result) != 1) {
             return false;
          }
-         $this->fields = $DB->fetch_assoc($result);
+         $this->fields = $DB->fetchAssoc($result);
          if (is_array($this->fields) && count($this->fields)) {
             return true;
          } else {
@@ -131,14 +131,14 @@ class PluginManufacturersimportsModel extends CommonDBTM {
 
       $config_url = PluginManufacturersimportsConfig::getFormUrl(true);
       echo "<form method='post' action='".$config_url."'>";
-      echo "<div align='center'><table class='tab_cadre_fixe'  cellspacing='2' cellpadding='2'>";
+      echo "<div align='center'><table class='tab_cadre_fixe'>";
       echo "<tr>";
       echo "<th>".PluginManufacturersimportsPreImport::getTypeName(2)."</th>";
       echo "<th>".__('Model Number', 'manufacturersimports')."</th>";
       echo "</tr>";
 
       if ($number == 1) {
-         while ($line = $DB->fetch_array($result)) {
+         while ($line = $DB->fetchArray($result)) {
             $ID = $line["id"];
             echo "<tr class='tab_bg_1'>";
             echo "<td class='left'>";

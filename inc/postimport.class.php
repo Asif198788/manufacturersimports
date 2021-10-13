@@ -73,10 +73,10 @@ class PluginManufacturersimportsPostImport extends CommonDBTM {
          return __('Curl PHP package not installed', 'manufacturersimports') . "\n";
       }
       $data        = '';
-      $timeout     = 10;
-      $proxy_host  = $CFG_GLPI["proxy_name"] . ":" . $CFG_GLPI["proxy_port"]; // host:port
-      $proxy_ident = $CFG_GLPI["proxy_user"] . ":" .
-                     Toolbox::decrypt($CFG_GLPI["proxy_passwd"], GLPIKEY); // username:password
+      $timeout     = 30;
+      $proxy_host  = !empty($CFG_GLPI["proxy_name"]) ? ($CFG_GLPI["proxy_name"] . ":" . $CFG_GLPI["proxy_port"]) : false; // host:port
+      $proxy_ident = !empty($CFG_GLPI["proxy_user"]) ? ($CFG_GLPI["proxy_user"]. ":" .
+                     Toolbox::decrypt($CFG_GLPI["proxy_passwd"], GLPIKEY)) : false; // username:password
 
       $url = $options["url"];
 
@@ -99,6 +99,18 @@ class PluginManufacturersimportsPostImport extends CommonDBTM {
       curl_setopt($ch, CURLOPT_COOKIEFILE, "cookiefile");
       curl_setopt($ch, CURLOPT_COOKIEJAR, "cookiefile"); // SAME cookiefile
 
+      if (!empty($options['token'])) {
+         curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            "Authorization: Bearer ".$options['token']
+            ]);
+         
+      }
+      if (!empty($options['ClientID'])) {
+         curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            "ClientID: ".$options['ClientID']
+         ]);
+
+      }
       //Do we have post field to send?
       if (!empty($options["post"])) {
          //curl_setopt($ch, CURLOPT_POST,true);
@@ -379,7 +391,10 @@ class PluginManufacturersimportsPostImport extends CommonDBTM {
       $query  .= " ORDER BY `" . $itemtable . "`.`name`";
       $result = $DB->query($query);
 
-      while ($line = $DB->fetch_array($result)) {
+      $supplierclass = "PluginManufacturersimports" . $suppliername;
+      $token = $supplierclass::getToken($config);
+
+      while ($line = $DB->fetchArray($result)) {
 
          $compSerial = $line['serial'];
          $ID         = $line['id'];
@@ -400,7 +415,7 @@ class PluginManufacturersimportsPostImport extends CommonDBTM {
          $post = PluginManufacturersimportsPreImport::getSupplierPost($suppliername, $compSerial,
                                                                       $otherSerial, $supplierkey,
                                                                       $supplierSecret);
-
+         $warranty_url = $supplierclass::getWarrantyUrl($config, $compSerial);
 
          //On complete l url du support du fournisseur avec le serial
          echo "<td>" . $compSerial . "</td>";
@@ -408,21 +423,25 @@ class PluginManufacturersimportsPostImport extends CommonDBTM {
          echo "<a href='" . $url . "' target='_blank'>" . _n('Manufacturer', 'Manufacturers', 1) . "</a>";
          echo "</td>";
 
-         $options = ["url"          => $url,
-                     "post"         => $post,
-                     "type"         => $type,
-                     "ID"           => $ID,
-                     "config"       => $config,
-                     "line"         => $line,
-                     "fromsupplier" => $fromsupplier,
-                     "fromwarranty" => $fromwarranty,
-                     "display"      => true];
+         $options = ["url"          => isset($warranty_url['url']) ? $warranty_url['url'] : $url,
+                          "post"         => $post,
+                          "type"         => $type,
+                          "ID"           => $ID,
+                          "config"       => $config,
+                          "line"         => $line,
+                          "fromsupplier" => $fromsupplier,
+                          "fromwarranty" => $fromwarranty,
+                          "display"      => true,
+                          "token"        => $token];
 
          if ($suppliername == PluginManufacturersimportsConfig::HP) {
             $options['url_warranty']  = PluginManufacturersimportsPreImport::selectSupplierWarranty(
                                                                         $suppliername, $supplierUrl,
                                                                         $compSerial, $otherSerial,
                                                                         $supplierkey, $supplierSecret);
+         }
+         if ($suppliername == PluginManufacturersimportsConfig::LENOVO) {
+            $options['ClientID']  =$supplierkey;
          }
 
          self::saveImport($options);
@@ -448,43 +467,50 @@ class PluginManufacturersimportsPostImport extends CommonDBTM {
       $default_values['fromsupplier'] = 0;
       $default_values['fromwarranty'] = 0;
       $default_values['line']         = [];
+      $default_values['ClientID']         = null;
       $default_values['config']       = new PluginManufacturersimportsConfig();
+      $default_values['token']        = false;
 
+      $values = [];
       foreach ($default_values as $key => $val) {
          if (isset($params[$key])) {
-            $$key = $params[$key];
+            $values[$key] = $params[$key];
          } else {
-            $$key = $val;
+            $values[$key] = $val;
          }
       }
 
-      if ($fromsupplier) {
-         $supplierId = $fromsupplier;
+      $config = $values['config'];
+
+      if ($values['fromsupplier']) {
+         $supplierId = $values['fromsupplier'];
       } else {
          $supplierId = $config->fields["suppliers_id"];
       }
       $suppliername = $config->fields["name"];
-      $supplierUrl  = $config->fields["supplier_url"];
-      $supplierkey  = $config->fields["supplier_key"];
       $adddoc       = $config->fields["document_adding"];
       $rubrique     = $config->fields["documentcategories_id"];
       $addcomments  = $config->fields["comment_adding"];
-
-      if ($fromwarranty) {
-         $warranty = $fromwarranty;
+      $url_warranty  = $config->fields["supplier_url"];
+      if (isset($params['fromwarranty']) && $params['fromwarranty']) {
+         $warranty = $values['fromwarranty'];
       } else {
          $warranty = $config->fields["warranty_duration"];
       }
 
       $contents = "";
-      $msgerr   = "";
+      //$msgerr   = "";
 
-      $options = ["url"          => $url,
-                       "download"     => false,
-                       "file"         => false,
-                       "post"         => $post,
-                       "suppliername" => $suppliername];
-
+      $options = ["url"          => $values['url'],
+                  "download"     => false,
+                  "file"         => false,
+                  "post"         => $values['post'],
+                  "suppliername" => $suppliername,
+                  "token"        => $values['token']
+                  ];
+      if ($suppliername == PluginManufacturersimportsConfig::LENOVO && $values["ClientID"] != null){
+         $options["ClientID"] = $values["ClientID"];
+      }
       $contents    = self::cURLData($options);
 
       if ($suppliername == PluginManufacturersimportsConfig::HP && $contents != null) {
@@ -495,8 +521,6 @@ class PluginManufacturersimportsPostImport extends CommonDBTM {
             $contents = self::cURLData($options); // Getting Warranty Data
          }
       }
-
-      $allcontents = $contents;
 
       // On extrait la date de garantie de la variable contents.
       $field = self::selectSupplierfield($suppliername);
@@ -540,8 +564,8 @@ class PluginManufacturersimportsPostImport extends CommonDBTM {
          }
 
          $date    = date("Y-m-d");
-         $options = ["itemtype"      => $type,
-                     "ID"            => $ID,
+         $options = ["itemtype"      => $values['type'],
+                     "ID"            => $values['ID'],
                      "date"          => $date,
                      "supplierId"    => $supplierId,
                      "warranty"      => $warranty,
@@ -550,15 +574,15 @@ class PluginManufacturersimportsPostImport extends CommonDBTM {
                      "maDate"        => $maDate,
                      "buyDate"       => $maBuyDate,
                      "warranty_info" => $warrantyinfo];
-         self::saveInfocoms($options, $display);
+         self::saveInfocoms($options, $values['display']);
 
          // on cree un doc dans GLPI qu'on va lier au materiel
          if ($adddoc != 0
              && $suppliername != PluginManufacturersimportsConfig::DELL) {
-            $options = ["itemtype"     => $type,
-                        "ID"           => $ID,
-                        "url"          => $url,
-                        "entities_id"  => $line["entities_id"],
+            $options = ["itemtype"     => $values['type'],
+                        "ID"           => $values['ID'],
+                        "url"          => $values['url'],
+                        "entities_id"  => $values['line']["entities_id"],
                         "rubrique"     => $rubrique,
                         "suppliername" => $suppliername];
             $values["documents_id"] = self::addDocument($options);
@@ -566,8 +590,8 @@ class PluginManufacturersimportsPostImport extends CommonDBTM {
 
          //insert base locale
          $values["import_status"] = 1;
-         $values["items_id"]      = $ID;
-         $values["itemtype"]      = $type;
+         $values["items_id"]      = $values['ID'];
+         $values["itemtype"]      = $values['type'];
          $values["date_import"]   = $date;
          $log                     = new PluginManufacturersimportsLog();
          $log->add($values);
@@ -575,21 +599,23 @@ class PluginManufacturersimportsPostImport extends CommonDBTM {
          // cleanup Log
          $log_clean = new PluginManufacturersimportsLog();
          $log_clean->deleteByCriteria([
-                                         'items_id'      => $ID,
-                                         'itemtype'      => $type,
+                                         'items_id'      => $values['ID'],
+                                         'itemtype'      => $values['type'],
                                          'import_status' => 2,
                                          'LIMIT'         => 1
                                       ]
          );
+         if(isset($_SESSION["glpi_plugin_manufacturersimports_total"])){
+            $_SESSION["glpi_plugin_manufacturersimports_total"] += 1;
+         }
 
-         $_SESSION["glpi_plugin_manufacturersimports_total"] += 1;
          return true;
 
       } else { // Failed check contents
-         if ($display) {
-            self::isInError($suppliername, $type, $ID, $contents);
+         if ($values['display']) {
+            self::isInError($suppliername, $values['type'], $values['ID'], $contents);
          } else {
-            self::isInError($suppliername, $type, $ID, null, $display);
+            self::isInError($suppliername, $values['type'], $values['ID'], null, $values['display']);
             return false;
          }
       }

@@ -95,14 +95,19 @@ class PluginManufacturersimportsPreImport extends CommonDBTM {
     *
     */
    static function selectSupplier($suppliername, $supplierUrl, $compSerial, $otherserial = null,
-                                  $supplierkey = null, $supplierSecret = null) {
+                                  $supplierkey = null, $supplierSecret = null, $second_url = false) {
       $url = "";
       if (!empty($suppliername)) {
          $supplierclass = "PluginManufacturersimports" . $suppliername;
          $supplier      = new $supplierclass();
          $infos         = $supplier->getSupplierInfo($compSerial, $otherserial, $supplierkey,
                                                      $supplierSecret, $supplierUrl);
-         $url           = $infos['url'];
+         if(!$second_url){
+            $url           = $infos['url'];
+         }else{
+            $url           = $infos['url_web'];
+         }
+
       }
       return $url;
    }
@@ -337,6 +342,11 @@ class PluginManufacturersimportsPreImport extends CommonDBTM {
 //            $output_url = "<a href='" . Toolbox::getItemTypeFormURL("PluginManufacturersimportsHP") .
 //                          "?sn=".$line["serial"]."&manufacturers_id=$configID' target='_blank'>" .
 //                         __('Manufacturer information', 'manufacturersimports') . "</a>";
+         }
+         if ($suppliername == PluginManufacturersimportsConfig::LENOVO) {
+            $output_url = self::selectSupplier($suppliername, $supplierUrl, $line["serial"], $otherSerial,
+                                        $supplierkey, $supplierkeysecret,true);
+
          }
          echo Search::showItem($output_type, $output_url, $item_num, $row_num);
 
@@ -592,7 +602,7 @@ class PluginManufacturersimportsPreImport extends CommonDBTM {
             }
             //////////////////////HEADER///////////////
             if ($output_type == Search::HTML_OUTPUT) {
-               echo "<form method='post' name='massiveaction_form' id='massiveaction_form' action=\"../ajax/massiveaction.php\">";
+               echo "<form method='post' name='massiveaction_form' id='massiveaction_form' action=\"../front/massiveaction.php\">";
             }
 
             //echo Search::displaySearchHeader($output_type,0); //table + div
@@ -653,7 +663,7 @@ class PluginManufacturersimportsPreImport extends CommonDBTM {
                $i = 0;
             }
             if ($i > 0) {
-               $DB->data_seek($result, $i);
+               $DB->dataSeek($result, $i);
             }
 
             $row_num = 1;
@@ -662,7 +672,7 @@ class PluginManufacturersimportsPreImport extends CommonDBTM {
                $i++;
 
                $item_num   = 1;
-               $line       = $DB->fetch_array($result);
+               $line       = $DB->fetchArray($result);
                $compSerial = $line['serial'];
                $compId     = $line['id'];
                $model      = $line["model_name"];
@@ -810,7 +820,7 @@ class PluginManufacturersimportsPreImport extends CommonDBTM {
     *
     * @return string
     */
-   static function queryImport($p, $config, $toview) {
+   static function queryImport($p, $config, $toview, $isCron = false) {
 
       $dbu = new DbUtils();
 
@@ -864,8 +874,9 @@ class PluginManufacturersimportsPreImport extends CommonDBTM {
       } else {
          $entities = $config->getEntityID();
       }
-      $query .= "" . $dbu->getEntitiesRestrictRequest(" AND", $itemtable, '', '', $item->maybeRecursive());
-
+      if(!$isCron){
+         $query .= "" . $dbu->getEntitiesRestrictRequest(" AND", $itemtable, '', '', $item->maybeRecursive());
+      }
       //// 4 - ORDER
       $ORDER = " ORDER BY `entities_id`,`" . $itemtable . "`.`name` ";
 

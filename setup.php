@@ -26,6 +26,8 @@
  along with Manufacturersimports. If not, see <http://www.gnu.org/licenses/>.
  --------------------------------------------------------------------------
  */
+ 
+define('PLUGIN_MANUFACTURERSIMPORTS_VERSION', '2.3.1');
 
 // Init the hooks of the plugins -Needed
 function plugin_init_manufacturersimports() {
@@ -56,11 +58,15 @@ function plugin_init_manufacturersimports() {
          = 'plugin_manufacturersimports_postinit';
    }
 
-   // Add specific files to add to the header : javascript or css
+   if (isset($_SESSION['glpiactiveprofile']['interface'])
+       && $_SESSION['glpiactiveprofile']['interface'] == 'central') {
+      // Add specific files to add to the header : javascript or css
       $PLUGIN_HOOKS['add_css']['manufacturersimports'] = [
          "manufacturersimports.css",
       ];
+   }
 
+    $PLUGIN_HOOKS['infocom']['manufacturersimports'] = ['PluginManufacturersimportsConfig', 'showForInfocom'];
 }
 
 // Get the name and the version of the plugin - Needed
@@ -68,19 +74,27 @@ function plugin_version_manufacturersimports() {
    return  ['name'           => _n('Suppliers import', 'Suppliers imports', 2,
                                         'manufacturersimports'),
                  'oldname'        => 'suppliertag',
-                 'version'        => '2.1.2',
+                 'version'        => PLUGIN_MANUFACTURERSIMPORTS_VERSION,
                  'license'        => 'GPLv2+',
                  'author'         => "<a href='http://infotel.com/services/expertise-technique/glpi/'>Infotel</a>",
                  'homepage'       => 'https://github.com/InfotelGLPI/manufacturersimports/',
-                 'minGlpiVersion' => '9.3',
-   ];
+                 'requirements'   => [
+                     'glpi' => [
+                        'min' => '9.5',
+                        'dev' => false
+                     ]
+                  ]
+            ];
 }
 
 // Optional : check prerequisites before install : may print errors or add to message after redirect
 function plugin_manufacturersimports_check_prerequisites() {
 
-   if (version_compare(GLPI_VERSION, '9.3', 'lt') || version_compare(GLPI_VERSION, '9.4', 'ge')) {
-      echo __('This plugin requires GLPI >= 9.3');
+   if (version_compare(GLPI_VERSION, '9.5', 'lt')
+         || version_compare(GLPI_VERSION, '9.6', 'ge')) {
+      if (method_exists('Plugin', 'messageIncompatible')) {
+         echo Plugin::messageIncompatible('core', '9.5');
+      }
       return false;
 
    } else if (!extension_loaded("soap")) {
