@@ -76,8 +76,7 @@ class PluginManufacturersimportsDell extends PluginManufacturersimportsManufactu
    /**
     * @see PluginManufacturersimportsManufacturer::getSupplierInfo()
     */
-   function getSupplierInfo($compSerial = null, $otherSerial = null, $key = null, $apisecret = null,
-                            $supplierUrl = null) {
+   function getSupplierInfo($compSerial = null, $otherserial = null, $key = null, $supplierUrl = null) {
 
       if (!$compSerial) {
          // by default
@@ -120,19 +119,9 @@ class PluginManufacturersimportsDell extends PluginManufacturersimportsManufactu
    function getStartDate($contents) {
       $info = json_decode($contents, true);
       // v5
-       $max_date = false;
-       if (isset($info[0]['entitlements'])) {
-           foreach ($info[0]['entitlements'] as $d) {
-               $date = new \DateTime($d['startDate']);
-               if ($max_date == false || $date > $max_date) {
-                   $max_date = $date;
-               }
-           }
-
-           if ($max_date) {
-               return $max_date->format('c');
-           }
-       }
+      if (isset($info[0]['entitlements'][0]['startDate'])) {
+         return $info[0]['entitlements'][0]['startDate'];
+      }
 
       return false;
    }
@@ -144,20 +133,9 @@ class PluginManufacturersimportsDell extends PluginManufacturersimportsManufactu
       $info = json_decode($contents, true);
       // v5
       // when several dates are available, will take the last one
-      $max_date = false;
-      if (isset($info[0]['entitlements'])) {
-         foreach ($info[0]['entitlements'] as $d) {
-            $date = new \DateTime($d['endDate']);
-            if ($max_date == false || $date > $max_date) {
-               $max_date = $date;
-            }
-         }
-
-         if ($max_date) {
-            return $max_date->format('c');
-         }
+      if (isset($info[0]['entitlements'][0]['endDate'])) {
+         return array_pop($info[0]['entitlements'])['endDate'];
       }
-
 
       return false;
    }
@@ -167,23 +145,10 @@ class PluginManufacturersimportsDell extends PluginManufacturersimportsManufactu
     */
    function getWarrantyInfo($contents) {
       $info = json_decode($contents, true);
-      
       // v5
       // when several warranties are available, will take the last one
-      $max_date = false;
-      $i = false;
-      if (isset($info[0]['entitlements'])) {
-         foreach ($info[0]['entitlements'] as $k => $d) {
-            $date = new \DateTime($d['endDate']);
-            if ($max_date == false || $date > $max_date) {
-               $max_date = $date;
-               $i        = $k;
-            }
-         }
-      }
-
-      if ($max_date && $i) {
-         return $info[0]['entitlements'][$i]['serviceLevelDescription'];
+      if (isset($info[0]['entitlements'][0]['serviceLevelDescription'])) {
+         return array_pop($info[0]['entitlements'])['serviceLevelDescription'];
       }
 
       return false;
@@ -213,6 +178,8 @@ class PluginManufacturersimportsDell extends PluginManufacturersimportsManufactu
     *                   >0 (endded)
     **/
    static function cronDataRecoveryDELL($task) {
+
+      $cron_status = 0;
 
       $cron_status = PluginManufacturersimportsImport::importCron($task, PluginManufacturersimportsConfig::DELL);
 

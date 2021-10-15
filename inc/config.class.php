@@ -93,19 +93,22 @@ class PluginManufacturersimportsConfig extends CommonDBTM {
       switch ($type) {
          case self::DELL:
          case self::HP:
-         case self::FUJITSU:
+            //         case self::FUJITSU:
          case self::LENOVO:
          case self::TOSHIBA:
          case self::WORTMANN_AG:
-            $supplierclass                = "PluginManufacturersimports" . $type;
-            $supplier                     = new $supplierclass();
-            $infos                        = $supplier->getSupplierInfo();
-            $this->fields["name"]         = $infos["name"];
-            $this->fields["supplier_url"] = $infos["supplier_url"];
-
-            if ($type == self::HP) {
-               $this->fields["supplier_secret"] = 'abcdefabcdefAaBBBBB';
-            }
+            $supplierclass = "PluginManufacturersimports".$type;
+            $supplier      = new $supplierclass();
+            $infos         = $supplier->getSupplierInfo(); // will get default infos
+            $this->fields  = $infos;
+            //$this->fields["name"]         = $infos["name"];
+            //$this->fields["supplier_url"] = $infos["supplier_url"];
+            //if ($type == self::DELL) {
+            //   $this->fields["token_url"] = $infos["token_url"];
+            //   $this->fields["warranty_url"] = $infos["warranty_url"];
+            //   $this->fields["supplier_key"] = "123456789";
+            //   $this->fields["supplier_secret"] = "987654321";
+            //}
             break;
          default:
             $this->post_getEmpty();
@@ -117,13 +120,12 @@ class PluginManufacturersimportsConfig extends CommonDBTM {
       global $DB;
 
       if ($this->fields["is_recursive"]) {
-         $dbu = new DbUtils();
          $query = "DELETE FROM `".$this->getTable()."`
                    WHERE `name` = '".$this->fields["name"]."'
                      AND `id` != '".$this->fields['id']."' " .
-                  $dbu->getEntitiesRestrictRequest('AND', $this->getTable(),
+                  getEntitiesRestrictRequest('AND', $this->getTable(),
                                              '',
-                                                   $dbu->getSonsOf("glpi_entities",
+                                             getSonsOf("glpi_entities",
                                                        $this->fields["entities_id"]));
          $DB->query($query);
       }
@@ -133,13 +135,12 @@ class PluginManufacturersimportsConfig extends CommonDBTM {
       global $DB;
 
       if ($this->fields["is_recursive"]) {
-         $dbu = new DbUtils();
          $query = "DELETE FROM `".$this->getTable()."`
                   WHERE `name` = '".$this->fields["name"]."'
                      AND `id` != '".$this->fields["id"]."' " .
-                  $dbu->getEntitiesRestrictRequest('AND', $this->getTable(),
+                getEntitiesRestrictRequest('AND', $this->getTable(),
                                            '',
-                                                   $dbu->getSonsOf("glpi_entities",
+                                           getSonsOf("glpi_entities",
                                                      $this->fields["entities_id"]));
          $DB->query($query);
       }
@@ -176,96 +177,75 @@ class PluginManufacturersimportsConfig extends CommonDBTM {
       return $options;
    }
 
-   /**
-    * Provides search options configuration. Do not rely directly
-    * on this, @see CommonDBTM::searchOptions instead.
-    *
-    * @since 9.3
-    *
-    * This should be overloaded in Class
-    *
-    * @return array a *not indexed* array of search options
-    *
-    * @see https://glpi-developer-documentation.rtfd.io/en/master/devapi/search.html
-    **/
-   public function rawSearchOptions() {
+   function getSearchOptions() {
 
-      $tab = parent::rawSearchOptions();
+      $tab = [];
 
-      $tab[] = [
-         'id'                 => '2',
-         'table'              => 'glpi_manufacturers',
-         'field'              => 'name',
-         'name'               => __('Manufacturer'),
-         'datatype'           => 'dropdown',
-         'massiveaction'      => false
-      ];
+      $tab['common']             = self::getTypeName(2);
 
-      $tab[] = [
-         'id'                 => '3',
-         'table'              => $this->getTable(),
-         'field'              => 'supplier_url',
-         'name'               => __('Manufacturer web address', 'manufacturersimports'),
-         'datatype'           => 'weblink',
-         'massiveaction'      => false
-      ];
+      $tab[1]['table']           = $this->getTable();
+      $tab[1]['field']           = 'name';
+      $tab[1]['name']            = __('Name');
+      $tab[1]['datatype']        = 'itemlink';
+      $tab[1]['itemlink_type']   = $this->getType();
 
-      $tab[] = [
-         'id'                 => '4',
-         'table'              => 'glpi_suppliers',
-         'field'              => 'name',
-         'name'               => __('Default supplier attached', 'manufacturersimports'),
-         'datatype'           => 'dropdown'
-      ];
+      $tab[2]['table']           = 'glpi_manufacturers';
+      $tab[2]['field']           = 'name';
+      $tab[2]['name']            = __('Manufacturer');
+      $tab[2]['datatype']        = 'dropdown';
+      $tab[2]['massiveaction']   = false;
 
-      $tab[] = [
-         'id'                 => '5',
-         'table'              => $this->getTable(),
-         'field'              => 'warranty_duration',
-         'name'               => __('New warranty attached', 'manufacturersimports'),
-         'datatype'           => 'integer',
-         'massiveaction'      => false
-      ];
+      $tab[3]['table']           = $this->getTable();
+      $tab[3]['field']           = 'supplier_url';
+      $tab[3]['name']            = __('Manufacturer web address',
+                                      'manufacturersimports');
+      $tab[3]['datatype']        = 'weblink';
+      $tab[3]['massiveaction']   = false;
 
-      $tab[] = [
-         'id'                 => '6',
-         'table'              => $this->getTable(),
-         'field'              => 'document_adding',
-         'name'               => __('Auto add of document', 'manufacturersimports'),
-         'datatype'           => 'bool',
-         'massiveaction'      => false
-      ];
+      $tab[4]['table']           = 'glpi_suppliers';
+      $tab[4]['field']           =  'name';
+      $tab[4]['name']            =  __('Default supplier attached',
+                                       'manufacturersimports');
+      $tab[4]['datatype']        = 'dropdown';
 
-      $tab[] = [
-         'id'                 => '7',
-         'table'              => 'glpi_documentcategories',
-         'field'              => 'name',
-         'name'               => __('Document heading'),
-         'massiveaction'      => false
-      ];
+      $tab[5]['table']           = $this->getTable();
+      $tab[5]['field']           = 'warranty_duration';
+      $tab[5]['name']            = __('New warranty attached',
+                                      'manufacturersimports');
+      $tab[5]['datatype']        = 'integer';
+      $tab[5]['massiveaction']   = false;
 
-      $tab[] = [
-         'id'                 => '8',
-         'table'              => $this->getTable(),
-         'field'              => 'comment_adding',
-         'name'               => __('Add a comment line', 'manufacturersimports'),
-         'datatype'           => 'bool'
-      ];
+      $tab[6]['table']           = $this->getTable();
+      $tab[6]['field']           = 'document_adding';
+      $tab[6]['name']            = __('Auto add of document',
+                                      'manufacturersimports');
+      $tab[6]['datatype']        = 'bool';
+      $tab[6]['massiveaction']   = false;
 
-      $tab[] = [
-         'id'                 => '30',
-         'table'              => $this->getTable(),
-         'field'              => 'id',
-         'name'               => __('ID')
-      ];
+      $tab[7]['table']           = 'glpi_documentcategories';
+      $tab[7]['field']           = 'name';
+      $tab[7]['name']            = __('Document heading');
+      $tab[7]['massiveaction']   = false;
 
-      $tab[] = [
-         'id'                 => '80',
-         'table'              => 'glpi_entities',
-         'field'              => 'completename',
-         'name'               => __('Entity'),
-         'datatype'           => 'dropdown'
-      ];
+      $tab[8]['table']           = $this->getTable();
+      $tab[8]['field']           = 'comment_adding';
+      $tab[8]['name']            = __('Add a comment line',
+                                      'manufacturersimports');
+      $tab[8]['datatype']        = 'bool';
+
+      $tab[30]['table']          = $this->getTable();
+      $tab[30]['field']          = 'id';
+      $tab[30]['name']           = __('ID');
+
+      $tab[80]['table']          = 'glpi_entities';
+      $tab[80]['field']          = 'completename';
+      $tab[80]['name']           = __('Entity');
+      $tab[80]['datatype']       = 'dropdown';
+
+      $tab[86]['table']          = $this->getTable();
+      $tab[86]['field']          = 'is_recursive';
+      $tab[86]['name']           = __('Child entities');
+      $tab[86]['datatype']       = 'bool';
 
       return $tab;
    }
@@ -287,6 +267,11 @@ class PluginManufacturersimportsConfig extends CommonDBTM {
             $_GET['preconfig'] = -1;
          }
       }
+
+      $input   = ["name"         => $this->fields["name"],
+                       "supplier_url" => $this->fields["supplier_url"]];
+      $canedit = $this->can($ID, UPDATE, $input);
+      $canrecu = $this->can($ID, 'recursive', $input);
 
       echo "<table class='tab_cadre_fixe'>";
       echo "<tr>";
@@ -327,7 +312,7 @@ class PluginManufacturersimportsConfig extends CommonDBTM {
       echo "<td class='tab_bg_2 left'>";
       Dropdown::show('Manufacturer',
                      ['name'  => "manufacturers_id",
-                      'value' => $this->fields["manufacturers_id"]]);
+                           'value' => $this->fields["manufacturers_id"]]);
       echo "</td>";
       echo "</tr>";
 
@@ -357,7 +342,7 @@ class PluginManufacturersimportsConfig extends CommonDBTM {
       echo "<td class='tab_bg_2 center' colspan='2'>".__('Default supplier attached', 'manufacturersimports')."</td>";
       echo "<td class='tab_bg_2 left' colspan='2'>";
       Dropdown::show('Supplier', ['name'  => "suppliers_id",
-                                  'value' => $this->fields["suppliers_id"]]);
+                                       'value' => $this->fields["suppliers_id"]]);
       echo "</td>";
       echo "</tr>";
 
@@ -375,44 +360,8 @@ class PluginManufacturersimportsConfig extends CommonDBTM {
       } else {
          echo "<input type='hidden' name='warranty_duration' value='0'>\n";
       }
-      if ($this->fields["name"] == self::HP) {
-
+      if ($this->fields["name"] != self::DELL) {
          echo "<tr>";
-         echo "<td class='tab_bg_2 center' colspan='2'>" . __('Manufacturer API key', 'manufacturersimports') . "</td>";
-         echo "<td class='tab_bg_2 left' colspan='2'>";
-         echo "<input type='text' name='supplier_key' size='100' value='" . $this->fields["supplier_key"] . "'>";
-         echo "</td>";
-         echo "</tr>";
-
-         echo "<tr>";
-         echo "<td class='tab_bg_2 center' colspan='2'>" . __('Manufacturer API Secret', 'manufacturersimports') . "</td>";
-         echo "<td class='tab_bg_2 left' colspan='2'>";
-         echo "<input type='text' name='supplier_secret' size='100' value='" . $this->fields["supplier_secret"] . "'>";
-         echo "</td>";
-         echo "</tr>";
-
-      } else if ($this->fields["name"] == self::DELL){ 
-         echo "<tr>";
-         echo "<td class='tab_bg_2 center' colspan='2'>".__('Client id', 'manufacturersimports')."</td>";
-         echo "<td class='tab_bg_2 left' colspan='2'>";
-         echo "<input type='text' name='supplier_key' size='50' value='".$this->fields["supplier_key"]."'>";
-         echo "</td>";
-         echo "</tr>";
-         echo "<tr>";
-         echo "<td class='tab_bg_2 center' colspan='2'>".__('Client secret', 'manufacturersimports')."</td>";
-         echo "<td class='tab_bg_2 left' colspan='2'>";
-         echo "<input type='text' name='supplier_secret' size='50' value='".$this->fields["supplier_secret"]."'>";
-         echo "</td>";
-         echo "</tr>";
-      }else if ($this->fields["name"] == self::LENOVO){
-         echo "<tr>";
-         echo "<td class='tab_bg_2 center' colspan='2'>".__('Client id', 'manufacturersimports')."</td>";
-         echo "<td class='tab_bg_2 left' colspan='2'>";
-         echo "<input type='text' name='supplier_key' size='50' value='".$this->fields["supplier_key"]."'>";
-         echo "</td>";
-         echo "</tr>";
-      } else {
-          echo "<tr>";
          echo "<td class='tab_bg_2 center' colspan='2'>".__('Auto add of document', 'manufacturersimports')."</td>";
          echo "<td class='tab_bg_2 left' colspan='2'>";
          Dropdown::showYesNo("document_adding", $this->fields["document_adding"]);
@@ -424,6 +373,19 @@ class PluginManufacturersimportsConfig extends CommonDBTM {
          echo "<td class='tab_bg_2 left' colspan='2'>";
          Dropdown::show('DocumentCategory', ['name'  => "documentcategories_id",
                                                    'value' => $this->fields["documentcategories_id"]]);
+         echo "</td>";
+         echo "</tr>";
+      } else { // DELL
+         echo "<tr>";
+         echo "<td class='tab_bg_2 center' colspan='2'>".__('Client id', 'manufacturersimports')."</td>";
+         echo "<td class='tab_bg_2 left' colspan='2'>";
+         echo "<input type='text' name='supplier_key' size='50' value='".$this->fields["supplier_key"]."'>";
+         echo "</td>";
+         echo "</tr>";
+         echo "<tr>";
+         echo "<td class='tab_bg_2 center' colspan='2'>".__('Client secret', 'manufacturersimports')."</td>";
+         echo "<td class='tab_bg_2 left' colspan='2'>";
+         echo "<input type='text' name='supplier_secret' size='50' value='".$this->fields["supplier_secret"]."'>";
          echo "</td>";
          echo "</tr>";
       }
@@ -547,12 +509,7 @@ class PluginManufacturersimportsConfig extends CommonDBTM {
          $supplierkey  = (isset($config->fields["supplier_key"]))?$config->fields["supplier_key"]:false;
          $supplierurl  = (isset($config->fields["supplier_url"]))?$config->fields["supplier_url"]:false;
 
-         if($suppliername == PluginManufacturersimportsConfig::LENOVO){
-            $url          = PluginManufacturersimportsPreImport::selectSupplier($suppliername, $supplierurl, $item->fields['serial'], $otherserial, $supplierkey,null,true);
-         }else{
-            $url          = PluginManufacturersimportsPreImport::selectSupplier($suppliername, $supplierurl, $item->fields['serial'], $otherserial, $supplierkey);
-         }
-
+         $url          = PluginManufacturersimportsPreImport::selectSupplier($suppliername, $supplierurl, $item->fields['serial'], $otherserial, $supplierkey);
 
          echo "<div align=\"center\"><table class=\"tab_cadre_fixe\"  cellspacing=\"2\" cellpadding=\"2\">";
          echo "<tr>";

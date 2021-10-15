@@ -33,7 +33,7 @@ function plugin_manufacturersimports_install() {
    include_once(GLPI_ROOT . "/plugins/manufacturersimports/inc/profile.class.php");
    include_once(GLPI_ROOT . "/plugins/manufacturersimports/inc/config.class.php");
 
-   $migration = new Migration("2.3.0");
+   $migration = new Migration("2.0.2");
    $update    = false;
 
    //Root of SQL files for DB installation or upgrade
@@ -41,7 +41,7 @@ function plugin_manufacturersimports_install() {
 
    if (!$DB->tableExists("glpi_plugin_manufacturersimports_configs")) {
 
-      $DB->runFile($sql_root . "/empty-2.3.0.sql");
+      $DB->runFile($sql_root . "/empty-2.0.2.sql");
 
    } else if ($DB->tableExists("glpi_plugin_suppliertag_config")
               && !$DB->fieldExists("glpi_plugin_suppliertag_config", "FK_entities")) {
@@ -76,10 +76,7 @@ function plugin_manufacturersimports_install() {
    } else if (!$DB->fieldExists("glpi_plugin_manufacturersimports_configs", "supplier_key")) {
       $DB->runFile($sql_root . "/update-1.7.0.sql");
    } else if (!$DB->fieldExists("glpi_plugin_manufacturersimports_configs", "supplier_secret")) {
-      $DB->runFile($sql_root . "/update-2.1.0.sql");
-   }
-   if (!$DB->fieldExists("glpi_plugin_manufacturersimports_configs", "warranty_url")) {
-      $DB->runFile($sql_root . "/update-2.1.3.sql");
+      $DB->runFile($sql_root . "/update-2.0.2.sql");
    }
 
    $query = "UPDATE `glpi_plugin_manufacturersimports_configs` 
@@ -90,14 +87,14 @@ function plugin_manufacturersimports_install() {
    $DB->query($query);
 
    $query = "UPDATE `glpi_plugin_manufacturersimports_configs` 
-             SET `Supplier_url` = 'https://www.lenovo.com/us/en/warrantyApos?serialNumber=' 
+             SET `Supplier_url` = 'http://shop.lenovo.com/SEUILibrary/controller/e/web/LenovoPortal/en_US/config.workflow:VerifyWarranty?country-code=897&' 
              WHERE `name` ='" . PluginManufacturersimportsConfig::LENOVO . "'";
    $DB->query($query);
 
-   $query = "UPDATE `glpi_plugin_manufacturersimports_configs`
-             SET `Supplier_url` = 'http://support.ts.fujitsu.com/Warranty/WarrantyStatus.asp?lng=com&IDNR'
-             WHERE `name` ='" . PluginManufacturersimportsConfig::FUJITSU . "'";
-   $DB->query($query);
+   //   $query = "UPDATE `glpi_plugin_manufacturersimports_configs`
+   //             SET `Supplier_url` = 'https://support.ts.fujitsu.com/Warranty/WarrantyStatus.asp?lng=EN&IDNR='
+   //             WHERE `name` ='" . PluginManufacturersimportsConfig::FUJITSU . "'";
+   //   $DB->query($query);
 
    $query = "UPDATE `glpi_plugin_manufacturersimports_configs` 
              SET `Supplier_url` = 'https://www.wortmann.de/fr-fr/profile/snsearch.aspx?SN=' 
@@ -105,7 +102,7 @@ function plugin_manufacturersimports_install() {
    $DB->query($query);
 
    $query = "UPDATE `glpi_plugin_manufacturersimports_configs` 
-             SET `Supplier_url` = 'https://css.api.hp.com/oauth/v1/token'
+             SET `Supplier_url` = 'http://h20565.www2.hpe.com/hpsc/wc/public/find' 
              WHERE `name` ='" . PluginManufacturersimportsConfig::HP . "'";
    $DB->query($query);
 
@@ -254,12 +251,9 @@ function plugin_manufacturersimports_forceGroupBy($type) {
 
 ////// SPECIFIC MODIF MASSIVE FUNCTIONS ///////
 function plugin_manufacturersimports_MassiveActions($type) {
-   $plugin = new Plugin();
-   if ($plugin->isActivated('manufacturersimports')) {
-      if (in_array($type, PluginManufacturersimportsConfig::getTypes(true))) {
-         return ['PluginManufacturersimportsModel' . MassiveAction::CLASS_ACTION_SEPARATOR . "add_model"
-                 => __('Add new material brand number', 'manufacturersimports')];
-      }
+   if (in_array($type, PluginManufacturersimportsConfig::getTypes(true))) {
+      return ['PluginManufacturersimportsModel' . MassiveAction::CLASS_ACTION_SEPARATOR . "add_model"
+                   => __('Add new material brand number', 'manufacturersimports')];
    }
    return [];
 }
