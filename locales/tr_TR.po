@@ -1,42 +1,42 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR $copyright
-# This file is distributed under the same license as the $soft package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
-# Xavier CAILLAUD <thetsmr@gmail.com>, 2020
-# 
-#, fuzzy
+# Kaya Zeren <kayazeren@gmail.com>, 2013,2015,2017
 msgid ""
 msgstr ""
-"Project-Id-Version: $soft $version\n"
+"Project-Id-Version: GLPI Project - manufacturersimports plugin\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-20 11:48+0200\n"
-"PO-Revision-Date: 2020-11-02 12:55+0000\n"
-"Last-Translator: Xavier CAILLAUD <thetsmr@gmail.com>, 2020\n"
-"Language-Team: Turkish (Turkey) (https://www.transifex.com/infotelGLPI/teams/12364/tr_TR/)\n"
+"POT-Creation-Date: 2017-10-04 09:56+0200\n"
+"PO-Revision-Date: 2017-10-04 08:11+0000\n"
+"Last-Translator: Amandine Manceau\n"
+"Language-Team: Turkish (Turkey) (http://www.transifex.com/tsmr/GLPI_manufacturersimports/language/tr_TR/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: tr_TR\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 
-#: hook.php:229 setup.php:70 ajax/massiveaction.php:40 inc/menu.class.php:45
+#: hook.php:227 setup.php:68 ajax/massiveaction.php:40 inc/menu.class.php:45
 #: inc/model.class.php:48 inc/preimport.class.php:50 inc/profile.class.php:71
 msgid "Suppliers import"
 msgid_plural "Suppliers imports"
 msgstr[0] "Sağlayıcıları alma"
-msgstr[1] "Sağlayıcıları alma"
 
-#: hook.php:233 inc/lenovo.class.php:53
+#: hook.php:231 inc/lenovobak.class.php:53 inc/lenovo.class.php:53
 msgid "Model number"
 msgstr "Model numarası"
 
-#: hook.php:261
+#: hook.php:257
 msgid "Add new material brand number"
 msgstr "Yeni malzeme marka numarası ekleyin"
 
-#: setup.php:97 setup.php:102 setup.php:107
+#: setup.php:84
+msgid "This plugin requires GLPI >= 0.90"
+msgstr "Bu uygulama eki GLPI 0.90 ve üzerindeki sürümlerle çalışır"
+
+#: setup.php:88 setup.php:92 setup.php:96
 msgid "Incompatible PHP Installation. Requires module"
 msgstr "PHP kurulumu uyumsuz. Şu modül gerekli:"
 
@@ -44,75 +44,55 @@ msgstr "PHP kurulumu uyumsuz. Şu modül gerekli:"
 msgid "Please activate the plugin"
 msgstr "Lütfen uygulama ekini etkinleştirin"
 
-#: inc/config.class.php:208 inc/config.class.php:335
+#: inc/config.class.php:196 inc/config.class.php:317
 msgid "Manufacturer web address"
 msgstr "Üretici web sitesi adresi"
 
-#: inc/config.class.php:217 inc/config.class.php:357
+#: inc/config.class.php:203 inc/config.class.php:324
 msgid "Default supplier attached"
 msgstr "Atanmış varsayılan sağlayıcı "
 
-#: inc/config.class.php:225 inc/preimport.class.php:638
+#: inc/config.class.php:209 inc/preimport.class.php:594
 msgid "New warranty attached"
 msgstr "Yeni garanti eklendi"
 
-#: inc/config.class.php:234 inc/config.class.php:409
+#: inc/config.class.php:216 inc/config.class.php:347
 msgid "Auto add of document"
 msgstr "Kendiliğinden belge ekleme"
 
-#: inc/config.class.php:251 inc/config.class.php:424
+#: inc/config.class.php:228 inc/config.class.php:369
 msgid "Add a comment line"
 msgstr "Açıklama satırı ekleyin"
 
-#: inc/config.class.php:343
-msgid "Access token API address"
-msgstr "Erişim kodu API adresi"
-
-#: inc/config.class.php:349
-msgid "Warranty API address"
-msgstr "Garanti API adresi"
-
-#: inc/config.class.php:367
+#: inc/config.class.php:334
 msgid "New warranty affected by default (Replace if 0)"
 msgstr "Varsayılan olarak yeni garanti kullanılsın (0 ise değiştirin)"
 
-#: inc/config.class.php:381
-msgid "Manufacturer API key"
-msgstr "Üretici API Anahtarı"
-
-#: inc/config.class.php:388
-msgid "Manufacturer API Secret"
-msgstr "Üretici API Parolası"
-
-#: inc/config.class.php:396
-msgid "Client id"
-msgstr "Müşteri kodu"
-
-#: inc/config.class.php:402
-msgid "Client secret"
-msgstr "Müşteri parolası"
-
-#: inc/config.class.php:416
+#: inc/config.class.php:354
 msgid "Section for document records"
 msgstr "Belge kayıtları bölümü"
 
-#: inc/config.class.php:556 inc/preimport.class.php:334
+#: inc/config.class.php:362
+msgid "Manufacturer API key"
+msgstr "Üretici API Anahtarı"
+
+#: inc/config.class.php:493 inc/preimport.class.php:302
 msgid "Manufacturer information"
 msgstr "Üretici bilgileri"
 
-#: inc/dell.class.php:167
+#: inc/dell.class.php:176
 msgid "Data recovery DELL for computer"
 msgstr "Bilgisayar için DELL veri kurtarma"
 
-#: inc/import.class.php:119 inc/postimport.class.php:679
+#: inc/import.class.php:115 inc/postimport.class.php:627
 msgid "Import OK"
 msgstr "Alma işlemi tamamlandı"
 
-#: inc/import.class.php:122 inc/postimport.class.php:783
+#: inc/import.class.php:118 inc/postimport.class.php:730
 msgid "Import failed"
 msgstr "Alma işlemi tamamlanamadı"
 
-#: inc/model.class.php:137 inc/preimport.class.php:630
+#: inc/model.class.php:137 inc/preimport.class.php:586
 msgid "Model Number"
 msgstr "Model Numarası"
 
@@ -120,89 +100,88 @@ msgstr "Model Numarası"
 msgid "Curl PHP package not installed"
 msgstr "Curl PHP paketi yüklü değil"
 
-#: inc/postimport.class.php:189
+#: inc/postimport.class.php:169
 msgid "Launching of imports"
 msgstr "Alma işlemleri başlatılıyor"
 
-#: inc/postimport.class.php:192
+#: inc/postimport.class.php:172
 msgid "Post import"
 msgstr "Alma sonrası"
 
-#: inc/postimport.class.php:200
+#: inc/postimport.class.php:180
 msgid "Result"
 msgstr "Sonuçlar"
 
-#: inc/postimport.class.php:201
+#: inc/postimport.class.php:181
 msgid "Details"
 msgstr "Ayrıntılar"
 
-#: inc/postimport.class.php:219
+#: inc/postimport.class.php:199
 msgid "Import in progress"
 msgstr "Alma işlemi sürüyor"
 
-#: inc/postimport.class.php:227
+#: inc/postimport.class.php:207
 #, php-format
 msgid "Total number of devices imported %s"
 msgstr "Toplam %s aygıt alındı"
 
-#: inc/postimport.class.php:658 inc/postimport.class.php:667
+#: inc/postimport.class.php:606 inc/postimport.class.php:615
 msgid "Imported from web site"
 msgstr "Web sitesinden alınan"
 
-#: inc/postimport.class.php:659 inc/postimport.class.php:668
+#: inc/postimport.class.php:607 inc/postimport.class.php:616
 msgid "With the manufacturersimports plugin"
 msgstr "manufacturersimports uygulama eki ile"
 
-#: inc/postimport.class.php:807
+#: inc/postimport.class.php:748
 msgid "Connection failed/data download from manufacturer web site"
 msgstr "Bağlantı kesildi / üreticinin sitesinden veri indirilemedi"
 
-#: inc/preimport.class.php:306
+#: inc/preimport.class.php:274
 msgid "The choosen supplier is not recursive"
 msgstr "Seçilmiş sağlayıcı yinelenen türde değil"
 
-#: inc/preimport.class.php:346
+#: inc/preimport.class.php:308
 msgid "Not yet imported"
 msgstr "Alınmayan"
 
-#: inc/preimport.class.php:349
+#: inc/preimport.class.php:311
 msgid "Problem during the importation"
 msgstr "Alma sırasında sorun çıktı"
 
-#: inc/preimport.class.php:357
+#: inc/preimport.class.php:319
 msgid "Already imported"
 msgstr "Zaten alınmış"
 
-#: inc/preimport.class.php:395
+#: inc/preimport.class.php:354
 msgid "Choose inventory type and manufacturer"
 msgstr "Envanter türü ve üreticiyi seçin"
 
-#: inc/preimport.class.php:435
+#: inc/preimport.class.php:393
 msgid "Devices not imported"
 msgstr "Aygıtlar alınmadı"
 
-#: inc/preimport.class.php:437
+#: inc/preimport.class.php:395
 msgid "Devices already imported"
 msgstr "Aygıtlar zaten alınmış"
 
-#: inc/preimport.class.php:444 inc/preimport.class.php:447
+#: inc/preimport.class.php:402 inc/preimport.class.php:405
 msgid "No manufacturer available. Please configure at least one manufacturer"
-msgstr ""
-"Kullanılabilecek bir üretici bulunamadı. Lütfen en az bir üretici ekleyin"
+msgstr "Kullanılabilecek bir üretici bulunamadı. Lütfen en az bir üretici ekleyin"
 
-#: inc/preimport.class.php:635
+#: inc/preimport.class.php:591
 msgid "Supplier attached"
 msgstr "Atanmış sağlayıcı"
 
-#: inc/preimport.class.php:685
+#: inc/preimport.class.php:640
 #, php-format
 msgid "Total number of devices to import %s"
 msgstr "Alınacak toplam aygıt sayısı %s"
 
-#: inc/preimport.class.php:732
+#: inc/preimport.class.php:687
 msgid "No device finded"
 msgstr "Herhangi bir aygıt bulunamadı"
 
-#: inc/preimport.class.php:1030
+#: inc/preimport.class.php:918
 msgid "Reset the import"
 msgstr "Alma işlemini sıfırlayın"
